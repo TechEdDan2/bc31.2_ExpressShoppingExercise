@@ -7,15 +7,20 @@ router.get('/', (req, res) => {
     res.json({ items: ITEMS });
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', (req, res, next) => {
     const item = ITEMS.find(i => i.id === +req.params.id);
+    if (!item) {
+        return next(new ExpressError("Item not found", 404));
+    }
     res.json({ item });
 });
 
-router.post('/', (req, res) => {
-    //For browser testing I am pulling data from the query string
-    // const newItem = { id: ITEMS.length + 1, name: req.query.name, price: req.query.price }
-    const newItem = { id: ITEMS.length + 1, name: req.body.name, price: req.body.price }
+router.post('/', (req, res, next) => {
+    const { name, price } = req.body;
+    if (!name || price === undefined) {
+        return next(new ExpressError("Name and price are required", 400));
+    }
+    const newItem = { id: ITEMS.length + 1, name: name, price: price };
     ITEMS.push(newItem);
     res.status(201).json({ item: newItem });
 });
